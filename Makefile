@@ -15,11 +15,19 @@ help:
 	@echo "		Check for type errors using pytype."
 	@echo "	pyupgrade"
 	@echo "		Uses pyupgrade to upgrade python syntax."
+	@echo "	readme-toc"
+	@echo "			Generate a Table Of Content for the README.md"
+	@echo "	check-readme"
+	@echo "		Check if the README can be converted from .md to .rst for PyPI."
 	@echo "	test"
 	@echo "		Run pytest on tests/."
 	@echo "		Use the JOBS environment variable to configure number of workers (default: 1)."
-	@echo "	check-readme"
-	@echo "		Check if the README can be converted from .md to .rst for PyPI."
+	@echo "	build-docker"
+	@echo "		Build package's docker image"
+	@echo "	upload-package"
+	@echo "		Upload package to Melior Pypi server"
+	@echo " git-tag"
+	@echo "		Create a git tag based on the current pacakge version and push"
 
 
 install:
@@ -31,6 +39,7 @@ clean:
 	find . -name '*.pyc' -exec rm -f {} +
 	find . -name '*.pyo' -exec rm -f {} +
 	find . -name '*~' -exec rm -f  {} +
+	find . -name 'README.md.*' -exec rm -f  {} +
 	rm -rf build/
 	rm -rf .pytype/
 	rm -rf dist/
@@ -52,11 +61,27 @@ types:
 pyupgrade:
 	find .  -name '*.py' | grep -v 'proto\|eggs\|docs' | xargs pyupgrade --py36-plus
 
-test: clean
-	# OMP_NUM_THREADS can improve overral performance using one thread by process (on tensorflow), avoiding overload
-	OMP_NUM_THREADS=1 pytest tests -n $(JOBS) --cov gnes
-
+readme-toc:
+	# https://github.com/ekalinin/github-markdown-toc
+	gh-md-toc --insert README.md
 
 # if this runs through we can be sure the readme is properly shown on pypi
 check-readme:
 	python setup.py check --restructuredtext --strict
+
+test: clean
+	# OMP_NUM_THREADS can improve overral performance using one thread by process (on tensorflow), avoiding overload
+	OMP_NUM_THREADS=1 pytest tests -n $(JOBS) --cov gnes
+
+build-docker:
+	# Examples:
+	# make build-docker version=0.1
+	./scripts/build_docker.sh $(version)
+
+upload-package: clean
+	python setup.py sdist
+	twine upload dist/* -r melior
+
+tag:
+	git tag $$( python -c 'import find; print(find.__version__)' )
+	git push --tags
