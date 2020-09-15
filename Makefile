@@ -83,5 +83,5 @@ upload-package: clean
 	twine upload dist/* -r melior
 
 tag:
-	git tag $$( python -c 'import find; print(find.__version__)' )
+	git tag $$( python -c 'import my_package; print(my_package.__version__)' )
 	git push --tags
