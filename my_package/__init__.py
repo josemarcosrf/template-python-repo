@@ -1,6 +1,9 @@
 import logging
 import os
 
+import my_package
+__version__ = my_package.__version__
+
 
 def install_logger(
     logger, level, fmt="%(levelname)-8s %(name)-25s:%(lineno)4d - %(message)-50s"

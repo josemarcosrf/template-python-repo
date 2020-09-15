@@ -26,4 +26,5 @@ Once cloned you'll need to **Rename your package**:
   - Makefile
   - setup.py
   - scripts/build_docker.sh
+  - my_package/__init__.py
 
