@@ -1,8 +1,8 @@
 import logging
 import os
 
-import my_package
-__version__ = my_package.__version__
+from my_package import version
+__version__ = version.__version__
 
 
 def install_logger(
