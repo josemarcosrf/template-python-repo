@@ -88,5 +88,6 @@ tag:
 
 setup-dvc:
 	# Configure https://mai-dvc.ams3.digitaloceanspaces.com as remote storage
+	dvc init
 	dvc remote add -d $(remote) s3://mai-dvc/$(remote)
 	dvc remote modify $(remote) endpointurl https://ams3.digitaloceanspaces.com
