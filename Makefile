@@ -63,7 +63,7 @@ pyupgrade:
 
 readme-toc:
 	# https://github.com/ekalinin/github-markdown-toc
-	gh-md-toc --insert README.md
+	find . -name README.md -exec gh-md-toc --insert {} \;
 
 # if this runs through we can be sure the readme is properly shown on pypi
 check-readme:
@@ -85,3 +85,9 @@ upload-package: clean
 tag:
 	git tag $$( python -c 'import my_package; print(my_package.__version__)' )
 	git push --tags
+
+setup-dvc:
+	# Configure https://mai-dvc.ams3.digitaloceanspaces.com as remote storage
+	dvc init
+	dvc remote add -d $(remote) s3://mai-dvc/$(remote)
+	dvc remote modify $(remote) endpointurl https://ams3.digitaloceanspaces.com
