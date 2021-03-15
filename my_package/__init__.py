@@ -1,15 +1,107 @@
-import logging
+import logging.config
 import os
 
+import tqdm
+
+from logging import Logger
+
 from my_package import version
+from my_package.constants import DEFAULT_LOG_DIR
+
+LOG_DIR = os.getenv("LOG_DIR", DEFAULT_LOG_DIR)
+
+
 __version__ = version.__version__
 
 
-def install_logger(
-    logger, level, fmt="%(levelname)-8s %(name)-25s:%(lineno)4d - %(message)-50s"
+logger = logging.getLogger(__name__)
+
+
+class TqdmStream(object):
+    @classmethod
+    def write(_, msg):
+        tqdm.tqdm.write(msg, end="")
+
+
+def disable_lib_loggers():
+    # disable other loggers
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+
+
+def get_default_config(
+    level: str, fmt: str, filename: str = None, my_logger: Logger = None,
+):
+    _logger = my_logger or logger
+    config_logging = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "standard": {"format": fmt,},
+            "colored": {
+                "()": "coloredlogs.ColoredFormatter",
+                "fmt": fmt,
+                "field_styles": {
+                    "asctime": {},
+                    "hostname": {"color": "magenta"},
+                    "levelname": {"color": "black", "bold": True},
+                    "programname": {"color": "cyan"},
+                    "name": {"color": "blue"},
+                },
+                "level_styles": {
+                    # More style info at:
+                    # https://coloredlogs.readthedocs.io/en/latest/api.html
+                    "spam": {"color": "green", "faint": True},
+                    "debug": {"color": "white", "faint": True},
+                    "verbose": {"color": "blue"},
+                    "info": {},
+                    "notice": {"color": "cyan", "bold": True},
+                    "warning": {"color": "yellow"},
+                    "success": {"color": "green", "bold": True},
+                    "error": {"color": "red"},
+                    "critical": {"color": "red", "bold": True},
+                },
+            },
+        },
+        "handlers": {
+            "console": {
+                "level": level,
+                "formatter": "colored",
+                "class": "logging.StreamHandler",
+                "stream": sys.stdout,
+            },
+        },
+        "loggers": {
+            _logger.name: {"handlers": ["console"], "level": level,},
+            "pika": {"handlers": ["console"], "level": "WARNING",},
+            "asyncio": {"level": "WARNING",},
+            "filelock": {"level": "WARNING",},
+        },
+    }
+
+    if filename:
+        config_logging["handlers"].update(
+            {
+                "rotate_file": {
+                    "level": level,
+                    "formatter": "standard",
+                    "class": "logging.handlers.TimedRotatingFileHandler",
+                    "filename": filename,
+                    "when": "H",
+                }
+            }
+        )
+        config_logging["loggers"][_logger.name]["handlers"].append("rotate_file")
+
+    return config_logging
+
+
+def init_logger(
+    level,
+    my_logger: Logger = None,
+    filename: str = None,
+    fmt="%(asctime)s,%(msecs)03d %(levelname)-8s %(name)-45s:%(lineno)3d - %(message)-50s",
 ):
     """ Configures the given logger; format, logging level, style, etc """
-    import coloredlogs
 
     def add_notice_log_level():
         """ Creates a new 'notice' logging level """
@@ -24,31 +116,18 @@ def install_logger(
 
         logging.Logger.notice = notice
 
+    # disable some library loggers
+    disable_lib_loggers()
+
     # Add an extra logging level above INFO and below WARNING
     add_notice_log_level()
 
-    # More style info at:
-    # https://coloredlogs.readthedocs.io/en/latest/api.html
-    field_styles = coloredlogs.DEFAULT_FIELD_STYLES.copy()
-    field_styles["asctime"] = {}
-    level_styles = coloredlogs.DEFAULT_LEVEL_STYLES.copy()
-    level_styles["debug"] = {"color": "white", "faint": True}
-    level_styles["notice"] = {"color": "cyan", "bold": True}
+    if filename:
+        if not os.path.exists(LOG_DIR):
+            os.makedirs(LOG_DIR, exist_ok=True)
 
-    coloredlogs.install(
-        logger=logger,
-        level=level,
-        use_chroot=False,
-        fmt=fmt,
-        level_styles=level_styles,
-        field_styles=field_styles,
+        filename = os.path.join(LOG_DIR, filename)
+
+    logging.config.dictConfig(
+        get_default_config(level=level, filename=filename, fmt=fmt, my_logger=my_logger)
     )
-
-
-def set_logger(context, level):
-    logger = logging.getLogger(context)
-    install_logger(logger, level=level)
-    return logger
-
-
-logger = set_logger(__name__, level=os.environ.get("LOG_LEVEL", logging.INFO))
