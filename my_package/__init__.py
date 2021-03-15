@@ -67,7 +67,8 @@ def get_default_config(
                 "level": level,
                 "formatter": "colored",
                 "class": "logging.StreamHandler",
-                "stream": sys.stdout,
+                "stream": TqdmStream,  # so logging doesn't brake tqdm
+                # "stream": sys.stdout,
             },
         },
         "loggers": {
