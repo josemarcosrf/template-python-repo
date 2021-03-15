@@ -3,6 +3,8 @@ import os
 
 import tqdm
 
+from logging import Logger
+
 from my_package import version
 from my_package.constants import DEFAULT_LOG_DIR
 
@@ -26,7 +28,10 @@ def disable_lib_loggers():
     logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 
-def get_default_config(level: str, filename: str, fmt: str):
+def get_default_config(
+    level: str, fmt: str, filename: str = None, my_logger: Logger = None,
+):
+    _logger = my_logger or logger
     config_logging = {
         "version": 1,
         "disable_existing_loggers": False,
@@ -62,32 +67,38 @@ def get_default_config(level: str, filename: str, fmt: str):
                 "level": level,
                 "formatter": "colored",
                 "class": "logging.StreamHandler",
-                "stream": TqdmStream,  # so logging doesn't brake tqdm
-                # "stream": sys.stdout,
-            },
-            "rotate_file": {
-                "level": level,
-                "formatter": "standard",
-                "class": "logging.handlers.TimedRotatingFileHandler",
-                "filename": filename,
-                "when": "H",
+                "stream": sys.stdout,
             },
         },
         "loggers": {
-            logger.name: {"handlers": ["console", "rotate_file"], "level": level,},
+            _logger.name: {"handlers": ["console"], "level": level,},
             "pika": {"handlers": ["console"], "level": "WARNING",},
             "asyncio": {"level": "WARNING",},
             "filelock": {"level": "WARNING",},
         },
     }
 
+    if filename:
+        config_logging["handlers"].update(
+            {
+                "rotate_file": {
+                    "level": level,
+                    "formatter": "standard",
+                    "class": "logging.handlers.TimedRotatingFileHandler",
+                    "filename": filename,
+                    "when": "H",
+                }
+            }
+        )
+        config_logging["loggers"][_logger.name]["handlers"].append("rotate_file")
+
     return config_logging
 
 
-# TODO: Make filename optional!
 def init_logger(
     level,
-    filename: str,
+    my_logger: Logger = None,
+    filename: str = None,
     fmt="%(asctime)s,%(msecs)03d %(levelname)-8s %(name)-45s:%(lineno)3d - %(message)-50s",
 ):
     """ Configures the given logger; format, logging level, style, etc """
@@ -111,11 +122,12 @@ def init_logger(
     # Add an extra logging level above INFO and below WARNING
     add_notice_log_level()
 
-    if not os.path.exists(LOG_DIR):
-        os.makedirs(LOG_DIR, exist_ok=True)
+    if filename:
+        if not os.path.exists(LOG_DIR):
+            os.makedirs(LOG_DIR, exist_ok=True)
+
+        filename = os.path.join(LOG_DIR, filename)
 
     logging.config.dictConfig(
-        get_default_config(
-            level=level, filename=os.path.join(LOG_DIR, filename), fmt=fmt
-        )
+        get_default_config(level=level, filename=filename, fmt=fmt, my_logger=my_logger)
     )
