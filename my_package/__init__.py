@@ -1,6 +1,6 @@
 import logging.config
 import os
-
+import sys
 import tqdm
 
 from logging import Logger
@@ -21,6 +21,10 @@ class TqdmStream(object):
     @classmethod
     def write(_, msg):
         tqdm.tqdm.write(msg, end="")
+
+    @classmethod
+    def flush(_):
+        sys.stdout.flush()
 
 
 def disable_lib_loggers():
