@@ -56,9 +56,7 @@ class PostInstallCommand(install):
     def run(self):
         import subprocess
 
-        subprocess.call(
-            os.path.join(here, "scripts/dummy.sh"), shell=True
-        )
+        subprocess.call(os.path.join(here, "scripts/dummy.sh"), shell=True)
         install.run(self)
 
 
@@ -70,14 +68,12 @@ class PostDevelopCommand(develop):
     def run(self):
         import subprocess
 
-        subprocess.call(
-            os.path.join(here, "scripts/dummy.sh"), shell=True
-        )
+        subprocess.call(os.path.join(here, "scripts/dummy.sh"), shell=True)
         develop.run(self)
 
 
 setup(
-    cmdclass={"install": PostInstallCommand, "develop": PostDevelopCommand, },
+    cmdclass={"install": PostInstallCommand, "develop": PostDevelopCommand,},
     name="my_package",
     scripts=["scripts/dummy.sh"],
     dependency_links=[],
