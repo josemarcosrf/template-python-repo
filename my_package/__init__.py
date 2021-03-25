@@ -1,9 +1,9 @@
 import logging.config
 import os
 import sys
-import tqdm
-
 from logging import Logger
+
+import tqdm
 
 from my_package import version
 from my_package.constants import DEFAULT_LOG_DIR
