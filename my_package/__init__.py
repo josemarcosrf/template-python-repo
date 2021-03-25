@@ -104,6 +104,7 @@ def init_logger(
     level,
     my_logger: Logger = None,
     filename: str = None,
+    log_dir: str = None,
     fmt="%(asctime)s,%(msecs)03d %(levelname)-8s %(name)-45s:%(lineno)3d - %(message)-50s",
 ):
     """ Configures the given logger; format, logging level, style, etc """
@@ -128,10 +129,11 @@ def init_logger(
     add_notice_log_level()
 
     if filename:
-        if not os.path.exists(LOG_DIR):
-            os.makedirs(LOG_DIR, exist_ok=True)
+        log_dir = log_dir or LOG_DIR
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir, exist_ok=True)
 
-        filename = os.path.join(LOG_DIR, filename)
+        filename = os.path.join(log_dir, filename)
 
     logging.config.dictConfig(
         get_default_config(level=level, filename=filename, fmt=fmt, my_logger=my_logger)
