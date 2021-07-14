@@ -71,3 +71,6 @@ MANIFEST
 
 # IDEs
 .vscode
+
+# Logs
+logs/

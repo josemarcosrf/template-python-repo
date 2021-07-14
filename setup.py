@@ -9,7 +9,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 # Avoids IDE errors, but actual version is read from version.py
 __version__ = None
-with open("rasa/version.py") as f:
+with open("my_package/version.py") as f:
     exec(f.read())
 
 # Get the long description from the README file
