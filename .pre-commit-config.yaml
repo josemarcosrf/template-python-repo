@@ -13,7 +13,7 @@ repos:
     rev: 3.7.1
     hooks:
     - id: flake8
-      exclude: ^docs/|^rasa/nlu/external/
+      exclude: ^docs/|^scripts
 
 -   repo: https://github.com/asottile/reorder_python_imports
     rev: v1.3.5

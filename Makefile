@@ -71,7 +71,7 @@ check-readme:
 
 test: clean
 	# OMP_NUM_THREADS can improve overral performance using one thread by process (on tensorflow), avoiding overload
-	OMP_NUM_THREADS=1 pytest tests -n $(JOBS) --cov gnes
+	OMP_NUM_THREADS=1 pytest tests -n $(JOBS) --cov my_package
 
 build-docker:
 	# Examples:
