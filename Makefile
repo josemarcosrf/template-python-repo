@@ -36,10 +36,10 @@ install:
 	pip list
 
 clean:
-	find . -name '*.pyc' -exec rm -f {} +
-	find . -name '*.pyo' -exec rm -f {} +
-	find . -name '*~' -exec rm -f  {} +
-	find . -name 'README.md.*' -exec rm -f  {} +
+	find . -type d \( -path ./.venv \) -prune -o -name '*.pyc' -exec rm -f {} +
+	find . -type d \( -path ./.venv \) -prune -o -name '*.pyo' -exec rm -f {} +
+	find . -type d \( -path ./.venv \) -prune -o -name '*~' -exec rm -f  {} +
+	find . -type d \( -path ./.venv \) -prune -o -name 'README.md.*' -exec rm -f  {} +
 	rm -rf build/
 	rm -rf .pytype/
 	rm -rf dist/
@@ -51,19 +51,21 @@ formatter:
 	black my_package --exclude tests/
 
 lint:
-	flake8 my_pacakge tests --exclude tests/
-	black --check my_pacakge tests --exclude tests/
+	flake8 my_package tests --exclude tests/
+	black --check my_package tests --exclude tests/
 
 types:
 	# https://google.github.io/pytype/
-	pytype --keep-going my_pacakge --exclude my_package/tests
+	pytype --keep-going my_package --exclude my_package/tests
 
 pyupgrade:
-	find .  -name '*.py' | grep -v 'proto\|eggs\|docs' | xargs pyupgrade --py36-plus
+	find . -type d \( -path ./.venv \) -prune -o \
+	    -name '*.py' | grep -v 'proto\|eggs\|docs' | xargs pyupgrade --py36-plus
 
 readme-toc:
 	# https://github.com/ekalinin/github-markdown-toc
-	find . -name README.md -exec gh-md-toc --insert {} \;
+	find . -type d \( -path ./.venv \) -prune -o \
+	    -name README.md -exec gh-md-toc --insert {} \;
 
 # if this runs through we can be sure the readme is properly shown on pypi
 check-readme:
