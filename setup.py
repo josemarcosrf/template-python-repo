@@ -33,7 +33,7 @@ tests_requires = [
 ]
 
 dev_requires = [
-    "black==19.10b0",
+    "black==24.3.0",
     "flake8==3.7.8",
     "pytype==2019.7.11",
     "pre-commit==1.21.0",
