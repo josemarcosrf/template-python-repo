@@ -5,8 +5,8 @@ from logging import Logger
 
 import tqdm
 
-from my_package import version
-from my_package.constants import DEFAULT_LOG_DIR
+from src.template_python_repo import version
+from src.template_python_repo.constants import DEFAULT_LOG_DIR
 
 LOG_DIR = os.getenv("LOG_DIR", DEFAULT_LOG_DIR)
 

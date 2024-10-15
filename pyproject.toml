@@ -1,0 +1,188 @@
+[project]
+name = "my_package"
+version = "0.1.0"
+description = "Description of my_package"
+authors = [
+    {name = "josemarcosrf", email = "jose@melior.ai"},
+    {name = "MeliorAI Inc.", email = "jose@melior.ai"},
+]
+dependencies = [
+    "click>=8.1.7",
+    "tqdm>=4.66.5",
+]
+requires-python = ">=3.10"
+readme = "README.md"
+license = {text = "Apache 2.0"}
+keywords = ["melior"]
+maintainers = [
+    {name = "Jose Marcos Rodriguez", email = "jose@melior.ai"},
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Software Development :: Libraries",
+]
+
+[project.urls]
+Source = "https://github.com/josemarcosrf/template-python-repo"
+
+[project.optional-dependencies]
+optional_group_1 = []
+optional_group_2 = []
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[tool.pdm]
+distribution = false
+
+[tool.pdm.version]
+source = "file"
+path = "src/template_python_repo/version.py"
+
+[tool.pdm.dev-dependencies]
+checks = [
+    "ruff>=0.4.2",
+    "isort>=5.13.2",
+    "mypy>=1.10.0",
+    "deptry>=0.16.1",
+]
+test = [
+    "pytest>=8.2.0",
+    "pytest-cov>=5.0.0",
+    "pytest-spec>=3.2.0",
+    "pytest-asyncio>=0.23.7",
+    "pytest-xdist[psutil]>=3.6.1",
+    "pytest-mock>=3.14.0",
+    "pytest-httpx>=0.32.0",
+    "pytest-timeout>=2.3.1",
+    "deepdiff>=8.0.1",
+]
+dev = [
+    "vulture>=2.11",
+    "invoke>=2.2.0",
+    "pre-commit>=3.7.1",
+]
+
+[tool.pdm.scripts.tests]
+cmd = "pytest --cov --spec -n auto -m 'not slow'"
+help = "Run unit tests and coverage. NOTE: Does not include slow tests."
+
+[tool.pdm.scripts.tests-all]
+cmd = "pytest --cov --spec -n auto"
+help = "Run all unit tests and coverage, including the slow ones."
+
+[tool.pdm.scripts.check-lint]
+shell = """
+    echo "👀 Checking code formatting..."
+    ruff format --check .
+    echo "👀 Checking import formatting..."
+    isort --check .
+    echo "👀 Checking linting rules..."
+    ruff check .
+"""
+help = "Run linting and formating checks."
+
+[tool.pdm.scripts.check-typing]
+shell = """
+    echo "👀 Checking static typing..."
+    mypy --install-types --non-interactive
+"""
+help = "Run static typing analysis."
+
+[tool.pdm.scripts.check-deps]
+shell = """
+    echo "👀 Checking dependencies..."
+    deptry .
+"""
+help = "Run static typing analysis."
+
+[tool.pdm.scripts.checks]
+composite = ["check-lint", "check-deps", "check-typing"]
+help = "Run all checks."
+
+[tool.pdm.scripts.reformat]
+shell = """
+    isort .
+    ruff format .
+"""
+help = "Reformat the code using isort and ruff."
+
+[tool.pdm.scripts.ready]
+composite = ["reformat", "checks", "tests"]
+help = "Run all checks and tests."
+
+[tool.pdm.scripts.reqs]
+cmd = "pdm export --prod --without-hashes -G :all"
+help = "Export requirements. Append `-o {file-name}` to save to a file."
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+asyncio_mode = "auto"
+markers = [
+    "slow: marks tests as slow (deselect with '-m not \"slow'\")",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning"
+]
+
+[tool.coverage.run]
+source = ["src/", ]
+omit = ["*/tests/*", "*/__main__.py"]
+
+[tool.coverage.report]
+skip_covered = false
+show_missing = true
+fail_under = 85
+exclude_also = ["pragma: no cover", "@abstract",]
+omit = []
+
+[tool.ruff]
+line-length = 88
+output-format = "grouped"
+
+[tool.ruff.lint]
+select = [  # see https://docs.astral.sh/ruff/rules/
+    "E4", "E7", "E9",  # basic pycodestyle rules
+    "W",     # pycodestyle warnings
+    "F",     # Pyflakes rules
+    "N",     # PEP8 naming conventions
+    "PLR",   # Pylint refactoring recommendations
+    "PTH",   # recommends to use pathlib instead of os.path
+    "UP",    # pyupgrade suggestions
+    "BLE",   # locates blind exception capture
+    "B",     # locates possible bugs and design problems
+    "A",     # locates shadowing of builtin names
+    "C4",    # locates possible issues with comprehensions
+    "DTZ",   # locates incorrect use of timezone information
+    "PIE",   # miscellaneous linting rules
+    "TRY",   # locates potential exception handling antipatterns
+    "PERF",  # locates potential performance issues
+    "RUF",   # various Ruff-specific linting rules
+]
+ignore = ["TRY003", "PLR0913"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.isort]
+profile = "black"
+line_length = 88
+filter_files = true
+force_alphabetical_sort_within_sections = true
+
+[tool.mypy]
+mypy_path = "flows/"
+files = ["flows/"]
+ignore_missing_imports = true
+warn_unused_ignores = true
+
+[tool.deptry]
+extend_exclude = ["tasks\\.py"]
+known_first_party = ["flows"]
+
+[tool.deptry.per_rule_ignores]
+DEP002 = []
